@@ -1,0 +1,75 @@
+paths:
+  /categories:
+    post:
+      tags: [Category]
+      summary: Create a category or sub-category
+      security: [ { BearerAuth: [] } ]        # admin only
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:      { type: string, example: "Suits" }
+                parentId:  { type: string, example: "65f1f2…" }
+                icon:      { type: string, format: binary }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+    get:
+      tags: [Category]
+      summary: List all active categories
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+
+  /categories/{id}:
+    put:
+      tags: [Category]
+      summary: Update category
+      security: [ { BearerAuth: [] } ]        # admin only
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:     { type: string }
+                parentId: { type: string }
+                isActive: { type: boolean }
+                icon:     { type: string, format: binary }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+    delete:
+      tags: [Category]
+      summary: Soft-delete category
+      security: [ { BearerAuth: [] } ]        # admin only
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted

@@ -1,0 +1,97 @@
+paths:
+  /orders/mine:
+    get:
+      tags: [Order]
+      summary: List my orders
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, example: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, example: 20 }
+      responses:
+        "200":
+          description: OK
+
+  /orders/{id}/deliver:
+    post:
+      tags: [Order]
+      summary: Tailor delivers work
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        "200": { description: Delivered }
+
+  /orders/{id}/accept:
+    post:
+      tags: [Order]
+      summary: Customer accepts delivery (triggers PayPal capture)
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Completed }
+
+  /orders/{id}/request-revision:
+    post:
+      tags: [Order]
+      summary: Customer requests revision
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRevision'
+      responses:
+        "200": { description: Revision requested }
+
+  /orders/{id}/cancel:
+    post:
+      tags: [Order]
+      summary: Cancel before payment
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Cancelled }
+
+  /orders/{id}/dispute:
+    post:
+      tags: [Order]
+      summary: Raise dispute
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Disputed }

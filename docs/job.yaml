@@ -1,0 +1,170 @@
+paths:
+  /jobs:
+    get:
+      tags: [Job]
+      summary: Public job list
+      parameters:
+        - in: query
+          name: categoryId
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, example: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, example: 20 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:   { type: integer }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Job' }
+
+    post:
+      tags: [Job]
+      summary: Customer creates a job
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/JobCreate' }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+
+  /jobs/mine:
+    get:
+      tags: [Job]
+      summary: Customer’s own jobs
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, example: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, example: 20 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:   { type: integer }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Job' }
+
+  /jobs/{id}:
+    put:
+      tags: [Job]
+      summary: Update / close / cancel job
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JobCreate' }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+
+    delete:
+      tags: [Job]
+      summary: Cancel job
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Cancelled
+
+  /jobs/{id}/proposals:
+    post:
+      tags: [Proposal]
+      summary: Tailor submits a proposal
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProposalCreate' }
+      responses:
+        "201":
+          description: Submitted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Proposal' }
+
+    get:
+      tags: [Proposal]
+      summary: Customer lists proposals for a job
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Proposal' }
+
+  /jobs/{id}/proposals/{pid}/accept:
+    post:
+      tags: [Proposal]
+      summary: Customer accepts a proposal (closes job)
+      security: [ { BearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: pid
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:      { type: string }
+                  proposalId: { type: string }

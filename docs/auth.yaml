@@ -1,0 +1,67 @@
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthRegister' }
+      responses:
+        "200":
+          description: OK
+        default:
+          $ref: '#/components/responses/DefaultError'
+
+  /auth/verify/otp:
+    post:
+      tags: [Auth]
+      summary: Verify email OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp]
+              properties:
+                email: { type: string, format: email }
+                otp:   { type: string, example: "123456" }
+      responses:
+        "200": { description: Verified }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        "200":
+          description: JWT token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, old_password, new_password]
+      responses:
+        "200": { description: Password updated }

@@ -1,0 +1,203 @@
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    DefaultError:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    # ── COMMON ──────────────────────────
+    ApiError:
+      type: object
+      properties:
+        message: { type: string }
+      example: { message: "Something went wrong" }
+
+    GeoPoint:
+      type: object
+      properties:
+        coordinates:
+          type: array
+          items: { type: number }
+          example: [74.3436, 31.5204]
+
+    # ── AUTH ────────────────────────────
+    AuthRegister:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name:     { type: string }
+        email:    { type: string, format: email }
+        password: { type: string, format: password }
+        role:     { type: string, enum: [customer, tailor] }
+
+    LoginResponse:
+      type: object
+      properties:
+        status:  { type: integer }
+        message: { type: string }
+        result:
+          type: object
+          properties:
+            usertoken: { type: string }
+            role:      { type: string }
+
+    # ── CUSTOMER PROFILE ────────────────
+    CustomerProfileCreate:
+      type: object
+      required: [phone, address]
+      properties:
+        phone:         { type: string, example: "0300-2223333" }
+        address:       { type: string, example: "House #99, Lahore" }
+        profilePicture: { type: string, format: binary }
+        geoLocation:   { $ref: '#/components/schemas/GeoPoint' }
+        measurements:
+          type: object
+          additionalProperties: { type: string }
+          example: { chest: "38", waist: "32" }
+
+    CustomerProfile:
+      allOf:
+        - $ref: '#/components/schemas/CustomerProfileCreate'
+        - type: object
+          properties:
+            _id:    { type: string }
+            userId: { type: string }
+
+    # ── TAILOR PROFILE ───────────────────
+    TailorProfileCreate:
+      type: object
+      required: [phone, address, bio, experience, specialization]
+      properties:
+        phone:         { type: string }
+        address:       { type: string }
+        bio:           { type: string }
+        experience:    { type: integer, example: 6 }
+        specialization:
+          type: array
+          items: { type: string }
+          example: ["Suits", "Sherwani"]
+        geoLocation:    { $ref: '#/components/schemas/GeoPoint' }
+        profilePicture: { type: string, format: binary }
+        portfolio:
+          type: array
+          items: { type: string, format: binary }
+
+    TailorProfile:
+      allOf:
+        - $ref: '#/components/schemas/TailorProfileCreate'
+        - type: object
+          properties:
+            _id:          { type: string }
+            rating:       { type: number, example: 4.9 }
+            reviewsCount: { type: integer, example: 28 }
+
+    # ── CATEGORY ────────────────────────
+    CategoryCreate:
+      type: object
+      required: [name]
+      properties:
+        name:     { type: string, example: "Suits" }
+        parentId: { type: string, nullable: true, example: "65f1f2…" }
+        icon:     { type: string, format: binary, nullable: true }
+
+    Category:
+      allOf:
+        - $ref: '#/components/schemas/CategoryCreate'
+        - type: object
+          properties:
+            _id:       { type: string }
+            slug:      { type: string, example: "suits" }
+            isActive:  { type: boolean, example: true }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+
+    # ── JOB & PROPOSAL ───────────────────
+    JobCreate:
+      type: object
+      required: [title, description, categoryId]
+      properties:
+        title:       { type: string }
+        description: { type: string }
+        categoryId:  { type: string }
+        budget:      { type: number }
+        dueDate:     { type: string, format: date }
+        attachments:
+          type: array
+          items: { type: string, format: binary }
+
+    Job:
+      allOf:
+        - $ref: '#/components/schemas/JobCreate'
+        - type: object
+          properties:
+            _id:                { type: string }
+            customerId:         { type: string }
+            status:              { type: string, enum: [open, closed, cancelled] }
+            acceptedProposalId:  { type: string, nullable: true }
+            createdAt:           { type: string, format: date-time }
+            updatedAt:           { type: string, format: date-time }
+
+    ProposalCreate:
+      type: object
+      required: [quote, duration, message]
+      properties:
+        quote:    { type: number, example: 120 }
+        duration: { type: integer, example: 7 }
+        message:  { type: string, example: "I can deliver a bespoke suit in one week." }
+
+    Proposal:
+      allOf:
+        - $ref: '#/components/schemas/ProposalCreate'
+        - type: object
+          properties:
+            _id:       { type: string }
+            jobId:     { type: string }
+            tailorId:  { type: string }
+            status:    { type: string, enum: [submitted, accepted, rejected] }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+
+    # ── ORDER ────────────────────────────
+    OrderRevision:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, example: "Please adjust the sleeve length by 1 inch." }
+
+    Order:
+      type: object
+      properties:
+        _id:        { type: string }
+        jobId:      { type: string }
+        proposalId: { type: string }
+        customerId: { type: string }
+        tailorId:   { type: string }
+        quote:      { type: number, example: 120 }
+        duration:   { type: integer, example: 7 }
+        deadline:   { type: string, format: date-time }
+        payment:
+          type: object
+          properties:
+            gateway:  { type: string, enum: [paypal, stripe] }
+            status:   { type: string, enum: [initiated, paid, failed, refunded] }
+            intentId: { type: string }
+        status:
+          type: string
+          enum:
+            [pending_payment, in_progress, delivered, revision,
+             completed, cancelled, disputed]
+        deliveryUrls:
+          type: array
+          items: { type: string }
+        revisionCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }

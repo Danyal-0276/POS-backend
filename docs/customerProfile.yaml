@@ -1,0 +1,51 @@
+paths:
+  /customer/profile:
+    post:
+      tags: [CustomerProfile]
+      summary: Create customer profile
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/CustomerProfileCreate' }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerProfile' }
+
+    get:
+      tags: [CustomerProfile]
+      summary: Get own customer profile
+      security: [ { BearerAuth: [] } ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerProfile' }
+
+    put:
+      tags: [CustomerProfile]
+      summary: Update customer profile
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/CustomerProfileCreate' }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerProfile' }
+
+    delete:
+      tags: [CustomerProfile]
+      summary: Delete profile
+      security: [ { BearerAuth: [] } ]
+      responses:
+        "200":
+          description: Deleted

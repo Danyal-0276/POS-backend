@@ -1,0 +1,79 @@
+paths:
+  /tailor/profile:
+    post:
+      tags: [TailorProfile]
+      summary: Create tailor profile
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/TailorProfileCreate' }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TailorProfile' }
+
+    get:
+      tags: [TailorProfile]
+      summary: Get own tailor profile
+      security: [ { BearerAuth: [] } ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TailorProfile' }
+
+    put:
+      tags: [TailorProfile]
+      summary: Update tailor profile
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/TailorProfileCreate' }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TailorProfile' }
+
+  /tailor/profile/portfolio:
+    post:
+      tags: [TailorProfile]
+      summary: Add portfolio images
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                portfolio:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        "200":
+          description: Images added
+
+    delete:
+      tags: [TailorProfile]
+      summary: Remove one portfolio image
+      security: [ { BearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string }
+      responses:
+        "200":
+          description: Image removed
